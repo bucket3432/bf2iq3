@@ -49,6 +49,7 @@ die() {
 }
 
 [ "$#" -ge 2 ] || die -c 2 -p "Not enough arguments."
+montage --version >/dev/null 2>&1 || die "montage not found in PATH. Is ImageMagick installed?"
 
 code="$1"
 
