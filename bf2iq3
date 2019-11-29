@@ -1,0 +1,23 @@
+#!/bin/sh
+
+code="$1"
+
+shift
+
+[ "$code" = "-" ] && code=/dev/stdin
+[ -r "$code" ] || { echo "ERROR: Could not read file: $code" >&2; exit 1; }
+
+montage $(
+tr -dc '.,><][+-' < "$code" |
+sed '
+s:.: &:g
+s:\.:operators/dot.png:g
+s:,:operators/comma.png:g
+s:-:operators/minus.png:g
+s:+:operators/plus.png:g
+s:\[:operators/lbracket.png:g
+s:\]:operators/rbracket.png:g
+s:<:operators/langle.png:g
+s:>:operators/rangle.png:g
+'
+) -geometry +4+12 -tile 16x -bordercolor black -border 1 "$@"
