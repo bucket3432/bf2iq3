@@ -1,11 +1,61 @@
 #!/bin/sh
 
+print_usage() {
+  cat <<EOF
+Usage: ${0##*/} <input> <montage args>
+       ${0##*/} -h
+Compiles Brainfuck code to IQ3 using the ImageMagick montage program.
+
+PARAMETERS
+   <input>	 The file containing Brainfuck code. Pass "-" for stdin.
+   <montage args>	The arguments to pass to montage. It must have at least the output file.
+
+OPTIONS
+   -h	Show this help message.
+EOF
+}
+
+[ "$1" = "--help" ] && { print_usage; exit 0; }
+while getopts h opt; do
+  case "$opt" in
+    h)
+      print_usage
+      exit 0
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+die() {
+  local OPTIND
+  local OPTARG
+  local opt
+  local ec=0
+  local print_usage=0
+
+  while getopts c:p opt; do
+    case "$opt" in
+      c) ec="$OPTARG" ;;
+      p) print_usage=1 ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
+  echo "ERROR:" "$@" >&2
+  [ "$print_usage" -eq 1 ] && print_usage >&2
+  exit 1
+}
+
+[ "$#" -ge 2 ] || die -c 2 -p "Not enough arguments."
+
 code="$1"
 
 shift
 
 [ "$code" = "-" ] && code=/dev/stdin
-[ -r "$code" ] || { echo "ERROR: Could not read file: $code" >&2; exit 1; }
+[ -r "$code" ] || die "Could not read file: ${code}" >&2
 
 montage $(
 tr -dc '.,><][+-' < "$code" |
